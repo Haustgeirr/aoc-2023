@@ -34,21 +34,34 @@ def parse_input(input):
   return seeds, maps
 
 
-def solve(input):
+def follow_map(seed, maps):
+  for map in maps.values():
+    for [destination, source, range, min] in map:
+      if source <= seed < source + range:
+        seed = seed + destination - source
+        break
+  
+  return seed
+
+
+def part_one(input):
   [seeds, maps] = parse_input(input)
 
   lowest_value = float('inf')
 
   for seed in seeds:
-    for map in maps.values():
-      for [destination, source, range] in map:
-        if source <= seed < source + range:
-          seed = seed + destination - source
-          break
-
-    lowest_value = min(lowest_value, seed)
+    lowest_value = min(lowest_value, follow_map(seed, maps))
     
-  print(lowest_value)
+  return lowest_value
 
 
-solve(input)
+def part_two(input):
+  [seeds, maps] = parse_input(input)
+  print(maps)
+
+  lowest_value = float('inf')
+
+  return lowest_value
+
+print('Part 1:', part_one(input))
+# print('Part 2:', part_two(input))
