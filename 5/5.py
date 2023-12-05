@@ -36,12 +36,22 @@ def parse_input(input):
 
 def follow_map(seed, maps):
   for map in maps.values():
-    for [destination, source, range, min] in map:
+    for [destination, source, range] in map:
       if source <= seed < source + range:
         seed = seed + destination - source
         break
   
   return seed
+
+def reverse_map(maybe, maps):
+  for map in reversed(list(maps.values())):
+    for [destination, source, range] in map:
+      if destination <= maybe < destination + range:
+        maybe = maybe + source - destination
+        break
+        
+        
+  return maybe
 
 
 def part_one(input):
@@ -57,11 +67,16 @@ def part_one(input):
 
 def part_two(input):
   [seeds, maps] = parse_input(input)
-  print(maps)
 
-  lowest_value = float('inf')
+  max_value = max(seeds[i] + seeds[i + 1] for i in range(0, len(seeds), 2))
+  
+  for i in range(max_value):
+    seed = reverse_map(i, maps)
 
-  return lowest_value
+    if seed in seeds:
+      return seed
+    
+  return None
 
 print('Part 1:', part_one(input))
-# print('Part 2:', part_two(input))
+print('Part 2:', part_two(input))
