@@ -64,19 +64,57 @@ def part_one(input):
     
   return lowest_value
 
+# Next is to handle how we split
+# which bucket does a number fall into
+# its in the example
+# then finish the permutes
+# then iterate through the seed_ranges
+# finall iterate the seed_ranges through the map
+# then fin?!
+def split_range(range, ranges):
+  new_ranges = [range]
+  index = 0
+  [s0, s1] = new_ranges[index]
+  for [d0, d1, delta] in ranges:
+    print(range, [d0, d1])
+    if s0 < s1 < d0 < d1:
+      print('no overlap, s lower')
+      break
+    
+    if d0 < d1 < s0 < s1:
+      print('no overlap, d lower')
+      continue
+
+    if s0 < d0 < s1 < d1:
+      print('overlap, s left')
+      new_ranges[index] = [s0, d0]
+      new_ranges.append([d0, s1])
+      new_ranges.append([s1, d1])
+      index += 1
+      continue
+
+    if d0 < s0 < d1 < s1:
+      print('overlap, d left')
+
+    if s0 < d0 < d1 < s1:
+      print('s encloses d')
+
+    if d0 < s0 < s1 < d1:
+      print('d encloses s')
+      new_ranges[index] = [d0, s0]
+      new_ranges.append([s0, s1])
+      new_ranges.append([s1, d1])
+      index += 1
+      break
+
+  print(new_ranges)
+
 
 def part_two(input):
   [seeds, maps] = parse_input(input)
+  seed_ranges = [[seeds[i],  seeds[i] + seeds[i + 1]] for i in range(0, len(seeds), 2)]
+  step_ranges = [[r[1], r[1] + r[2], r[0] - r[1]] for r in list(maps.values())[0]]
+  ranges = split_range(seed_ranges[0], step_ranges)
 
-  max_value = max(seeds[i] + seeds[i + 1] for i in range(0, len(seeds), 2))
-  
-  for i in range(max_value):
-    seed = reverse_map(i, maps)
-
-    if seed in seeds:
-      return seed
-    
-  return None
-
-print('Part 1:', part_one(input))
+# print('Part 1:', part_one(input))
 print('Part 2:', part_two(input))
