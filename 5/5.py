@@ -64,57 +64,97 @@ def part_one(input):
     
   return lowest_value
 
-# Next is to handle how we split
-# which bucket does a number fall into
-# its in the example
-# then finish the permutes
-# then iterate through the seed_ranges
-# finall iterate the seed_ranges through the map
-# then fin?!
+
 def split_range(range, ranges):
   new_ranges = [range]
   index = 0
   [s0, s1] = new_ranges[index]
   for [d0, d1, delta] in ranges:
-    print(range, [d0, d1])
+    # no overlap, s lower
     if s0 < s1 < d0 < d1:
-      print('no overlap, s lower')
       break
     
+    # no overlap, d lower
     if d0 < d1 < s0 < s1:
-      print('no overlap, d lower')
       continue
 
-    if s0 < d0 < s1 < d1:
-      print('overlap, s left')
-      new_ranges[index] = [s0, d0]
-      new_ranges.append([d0, s1])
-      new_ranges.append([s1, d1])
+    # overlap, perfect
+    if s0 == d0  and s1 == d1:
+      new_ranges[index] = [s0 + delta, s1 + delta]
+      break
+
+    # overlap, s left
+    if s0 < d0 <= s1 <= d1:
+      new_ranges[index] = [s0, d0 - 1]
+      new_ranges.append([d0 + delta, s1 + delta])
       index += 1
       continue
 
-    if d0 < s0 < d1 < s1:
-      print('overlap, d left')
+    # overlap, d left
+    if d0 < s0 <= d1 <= s1:
+      new_ranges[index] = [s0 + delta, d1 + delta]
+      if (d1 < s1):
+        new_ranges.append([d1 + 1, s1])
+      index += 1
+      continue
 
+    # s encloses d
     if s0 < d0 < d1 < s1:
-      print('s encloses d')
-
-    if d0 < s0 < s1 < d1:
-      print('d encloses s')
-      new_ranges[index] = [d0, s0]
-      new_ranges.append([s0, s1])
-      new_ranges.append([s1, d1])
+      new_ranges[index] = [s0, d0 - 1]
+      new_ranges.append([d0 + delta, d1 + delta])
+      new_ranges.append([d1 + 1, s1])
       index += 1
       break
 
-  print(new_ranges)
+    # d encloses s
+    if d0 < s0 < s1 < d1:
+      new_ranges[index] = [s0 + delta, s1 + delta]
+      index += 1
+      break
+
+  return new_ranges
+
+
+def recursive_merge(inter, start_index = 0):
+  for i in range(start_index, len(inter) - 1):
+      if inter[i][1] > inter[i+1][0]:
+          new_start = inter[i][0]
+          new_end = inter[i+1][1]
+          inter[i] = [new_start, new_end]
+          del inter[i+1]
+          return recursive_merge(inter.copy(), start_index=i)
+  return inter    
 
 
 def part_two(input):
   [seeds, maps] = parse_input(input)
   seed_ranges = [[seeds[i],  seeds[i] + seeds[i + 1]] for i in range(0, len(seeds), 2)]
-  step_ranges = [[r[1], r[1] + r[2], r[0] - r[1]] for r in list(maps.values())[0]]
-  ranges = split_range(seed_ranges[0], step_ranges)
+  step_ranges = [[[r[1], r[1] + r[2] - 1, r[0] - r[1]] for r in maps] for maps in list(maps.values())]
 
-# print('Part 1:', part_one(input))
+  input_ranges = seed_ranges
+  output_ranges = []
+  for step in step_ranges:
+    output_ranges = []
+    for input in input_ranges:
+      output_ranges += split_range(input, step)
+    
+    output_ranges.sort(key=lambda a: (a[0], a[1]))
+    merged = recursive_merge(output_ranges.copy())
+    input_ranges = merged
+
+  output_ranges.sort(key=lambda a: (a[0], a[1]))
+  return output_ranges[0][0]
+  
+
+print('Part 1:', part_one(input))
 print('Part 2:', part_two(input))
+
+# print(split_range([10, 20], [[10, 20, 100]])) # overlap, perfect
+# print(split_range([10, 20], [[15, 20, 100]]))
+# print(split_range([10, 20], [[15, 25, 100]]))
+# print(split_range([10, 20], [[20, 30, 100]]))
+# print(split_range([10, 20], [[0, 10, 100]]))
+# print(split_range([10, 20], [[5, 15, 100]]))  
+# print(split_range([10, 20], [[5, 10, 100]]))  
+# print(split_range([10, 20], [[5, 25, 100]]))
+# print(split_range([10, 20], [[11, 19, 100]]))
