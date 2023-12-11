@@ -33,20 +33,16 @@ def part_two(input):
     starting_keys = [key for key in nodes.keys() if re.match(r".{2}A", key)]
 
     keys = starting_keys.copy()
-    steps = 0
     factors = []
-    while len(keys) > 0:
-        dir = route[steps % len(route)]
-        steps += 1
+    for k in keys:
+        key = k
+        steps = 0
+        while not re.match(r".{2}Z", key) and steps < 30000:
+            dir = route[steps % len(route)]
+            key = nodes[key][0] if dir == "L" else nodes[key][1]
+            steps += 1
 
-        for i, key in enumerate(keys):
-            new_key = nodes[key][0] if dir == "L" else nodes[key][1]
-
-            if re.match(r".{2}Z", new_key):
-                keys.pop(i)
-                factors.append(steps)
-            else:
-                keys[i] = new_key
+        factors.append(steps)
 
     return math.lcm(*factors)
 
